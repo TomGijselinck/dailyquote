@@ -36,16 +36,38 @@ app.get('/', (req, res) => {
  * Return a random quote.
  */
 app.get('/quote', (req, res) => {
-  db.collection('quotes').find({}).toArray(function(err, result) {
+  db.collection('current_quote').find({}).toArray(function(err, result) {
     if (err) {
       console.log(err);
-      res.send("db error")
-    } else if (result.length) {
-      console.log('Select random quote');
-      res.send(shuffle.pick(result));
     } else {
-      console.log('No documents found')
-      res.send("Empty set");
+      var d = new Date();
+      if (result[0].weekday === d.getDay()) {
+        res.send(result[0].quote);
+      } else {
+        getNewQuote(function(response) {
+          res.send(response);
+          console.log(response);
+        });
+      }
     }
   });
 })
+
+function getNewQuote(callback) {
+  db.collection('quotes').find({}).toArray(function(err, result) {
+    if (err) {
+      callback("db error");
+      console.log(err);
+    } else if (result.length) {
+      var newQuote = shuffle.pick(result);
+      var d = new Date();
+      db.collection('current_quote').update({}, {$set: {quote: newQuote}});
+      db.collection('current_quote').update({}, {$set: {weekday: d.getDay()}});
+      callback(newQuote);
+      console.log('Select new random quote');
+    } else {
+      callback("Empty set");
+      console.log('No documents found');
+    }
+  });
+}
