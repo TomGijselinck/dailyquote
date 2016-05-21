@@ -1,19 +1,46 @@
 const express = require('express');
 const app = express();
-const fs = require("fs");
+const shuffle = require('shuffle-array');
 
 const host = '127.0.0.1';
 const port = 3000;
 
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
+const url = 'mongodb://localhost:27017/dailyquote';
 
+MongoClient.connect(url, (err, database) => {
+  if (err) {
+    console.log('Unable to connect to the mongoDB server. Error:', err);
+    res.send("db error")
+  } else {
+    console.log('Connection established to', url);
+    db = database;
 
-app.get('/', function (req, res) {
-  res.send('Hello World!');
+    app.listen(port);
+    console.log("Listening on port 3000");
+  }
 });
 
 
-const server = app.listen(port, function () {
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
 
-  console.log("Quotes app listening at http://%s:%s", host, port)
-
+/**
+ * Return a random quote.
+ */
+app.get('/quote', (req, res) => {
+  db.collection('quotes').find({}).toArray(function(err, result) {
+    if (err) {
+      console.log(err);
+      res.send("db error")
+    } else if (result.length) {
+      console.log('Select random quote');
+      res.send(shuffle.pick(result));
+    } else {
+      console.log('No documents found')
+      res.send("Empty set");
+    }
+  });
 })
