@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/TomGijselinck/dailyquote#readme",
   "dependencies": {
-    "express": "^4.13.4"
+    "express": "^4.13.4",
+    "mongodb": "^2.1.19",
+    "shuffle-array": "^1.0.0"
   }
 }
