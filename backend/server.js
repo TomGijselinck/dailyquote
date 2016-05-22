@@ -47,14 +47,16 @@ app.get('/quote', (req, res) => {
         getNewQuote(function(response) {
           res.send(response);
           console.log(response);
-        });
+        }, result[0].quote);
       }
     }
   });
 })
 
-function getNewQuote(callback) {
-  db.collection('quotes').find({}).toArray(function(err, result) {
+function getNewQuote(callback, currentQuote) {
+  db.collection('quotes')
+    .find({useCount: {$eq: currentQuote.useCount}})
+    .toArray(function(err, result) {
     if (err) {
       callback("db error");
       console.log(err);
@@ -63,10 +65,15 @@ function getNewQuote(callback) {
       var d = new Date();
       db.collection('current_quote').update({}, {$set: {quote: newQuote}});
       db.collection('current_quote').update({}, {$set: {weekday: d.getDay()}});
+      db.collection('quotes').update(
+        {_id: newQuote._id},
+        {$set: {useCount: newQuote.useCount + 1}}
+      );
       callback(newQuote);
       console.log('Select new random quote');
     } else {
-      callback("Empty set");
+      currentQuote.useCount = currentQuote.useCount + 1;
+      getNewQuote(callback, currentQuote);
       console.log('No documents found');
     }
   });
