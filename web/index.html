@@ -34,7 +34,6 @@
     /**
      * You must include the dependency on 'ngMaterial'
      */
-    // angular.module('BlankApp', ['ngMaterial']);
     var app = angular.module('quoteApp', ['ngMaterial']);
     app.controller('quoteCtrl', function($scope, $http, $mdDialog, $mdMedia) {
         $http.get("http://localhost:3000/quote")
